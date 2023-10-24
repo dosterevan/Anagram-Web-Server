@@ -1,10 +1,9 @@
 # UOCIS322 - Project 3 #
+Evan Doster
 
-You'll learn about JQuery and asynchronous requests in this project.
+edoster@uoregon.edu
 
-## Overview
-
-The program is a simple anagram game designed for English-learning students in elementary and middle school. It presents a list of words to students and an anagram. The anagram is a jumble of some of the words, which are randomly chosen. Students attempt to type words that can be created from the jumble. When a matching word is typed, it is added to a list of solved words.
+Description; The program is a simple anagram game designed for English-learning students in elementary and middle school. It presents a list of words to students and an anagram. The anagram is a jumble of some of the words, which are randomly chosen. Students attempt to type words that can be created from the jumble. When a matching word is typed, it is added to a list of solved words.
 
 The vocabulary word list is fixed for one invocation of the server, so multiple students connected to the same server will see the same vocabulary list but may have different anagrams.
 
@@ -37,26 +36,6 @@ This directory contains a few word lists in the form of text files. You should n
 
 ### How do I run the tests?
 The `tests` directory contains a test suite for the `src` package. There's a `run_tests.sh`, which you can run in your container while it's running. However, it is not required, since you will not be changing anything in `src`.
-
-## Grading Rubric
-
-* If your code works as expected: 100 points. This includes:
-	* AJAX in the frontend (`vocab.html`)
-	* Logic in the backend (`flask_vocab.py`)
-	* Frontend to backend interaction (with correct requests and responses) between `vocab.html` and `flask_vocab.py`.
-	* Basically the webpage should handle validation WITHOUT any refreshes.
-* If the game isn't fully functional as described, **40 point** will be docked.
-
-* If messages are not displayed correctly in the webpage, 30 points will be docked. Expected behavior is notifying whether (a) the word typed is not in the vocabulary, or (b) the word cannot be made from the anagram; and in the case of a match, the word should be written somewhere along with the rest of the matched words.
-
-* If none of the functionalities work, 30 will be assigned assuming
-    * `credentials.ini` is submitted with the correct URL of your repo,
-    * `Dockerfile` builds without any errors, and an instance runs without crashing.
-    * `Dockerfile` and `README` are updated with your name and email.
-
-* If the `Dockerfile` doesn't run, build or is missing, 5 will be assigned.
-
-* If `credentials.ini` is not submitted or the repo is not found, 0 will be assigned.
 	 
 
 ## Authors

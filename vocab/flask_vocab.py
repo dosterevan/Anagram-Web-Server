@@ -5,6 +5,7 @@ from a scrambled string)
 """
 
 import flask
+from flask import jsonify, request
 import logging
 
 # Our modules
@@ -58,18 +59,28 @@ def index():
     return flask.render_template('vocab.html')
 
 
-@app.route("/keep_going")
+@app.route("/_keep_going")
 def keep_going():
-    """
-    After initial use of index, we keep the same scrambled
-    word and try to get more matches
-    """
     flask.g.vocab = WORDS.as_list()
-    return flask.render_template('vocab.html')
 
+    #jumble = flask.session["jumble"]
+    text = request.args.get("text", type=str)
+
+    #in_jumble = LetterBag(jumble).contains(text)
+    matched = WORDS.has(text)
+
+    #match = (matched and in_jumble)
+
+    app.logger.debug("Got a JSON request")
+    rslt = {"matched": matched}
+    app.logger.debug(print(rslt))
+    return flask.jsonify(result=rslt)
 
 @app.route("/success")
 def success():
+    #app.logger.info(print("fix success"))
+    #success = {"success": "success.html"}
+    #return flask.jsonify(success)
     return flask.render_template('success.html')
 
 
@@ -79,7 +90,7 @@ def success():
 #   a JSON request handler
 #######################
 
-@app.route("/_check", methods=["POST"])
+@app.route("/_check")
 def check():
     """
     User has submitted the form with a word ('attempt')
@@ -91,51 +102,55 @@ def check():
     """
     app.logger.debug("Entering check")
 
-    # The data we need, from form and from cookie
-    text = flask.request.form["attempt"]
+    # The data we need, from form and from cookie 
+    text = request.args.get("text", type=str)
+    #print("text", text)
     jumble = flask.session["jumble"]
+    #print("Jumble", jumble)
     matches = flask.session.get("matches", [])  # Default to empty list
 
     # Is it good?
     in_jumble = LetterBag(jumble).contains(text)
+    #print(in_jumble)
     matched = WORDS.has(text)
+    #print(matched)
+    #print(text in matches)
+    result = len(matches) >= flask.session["target_count"]
 
+    response_data = {
+        'result': False,
+        'redirect_url': False,
+        'matches': matches,
+        'target' : flask.session["target_count"],
+        'message': None
+    }
+    #app.logger.info(print("result", result))
+
+    success = matched and in_jumble and not (text in matches)
     # Respond appropriately
-    if matched and in_jumble and not (text in matches):
+
+    if success:
         # Cool, they found a new word
+        response_data['message'] = "Congrats you found the match: {}".format(text)
         matches.append(text)
         flask.session["matches"] = matches
+        return flask.jsonify(response_data)
+    if result:
+        return jsonify(redirect_url=flask.url_for("success"), result = True)
     elif text in matches:
-        flask.flash("You already found {}".format(text))
+        #flask.flash("You already found {}".format(text))
+        response_data['message'] = "You already found {}".format(text)
+        app.logger.debug(print(response_data))
+        return flask.jsonify(response_data)
     elif not matched:
-        flask.flash("{} isn't in the list of words".format(text))
+        response_data['message'] = "{} isn't in the list of words".format(text)
+        return flask.jsonify(response_data)
     elif not in_jumble:
-        flask.flash(
-            '"{}" can\'t be made from the letters {}'.format(text, jumble))
+        response_data['message'] = '"{}" can\'t be made from the letters {}'.format(text, jumble)
+        return flask.jsonify(response_data)
     else:
         app.logger.debug("This case shouldn't happen!")
         assert False  # Raises AssertionError
-
-    # Choose page:  Solved enough, or keep going?
-    if len(matches) >= flask.session["target_count"]:
-       return flask.redirect(flask.url_for("success"))
-    else:
-       return flask.redirect(flask.url_for("keep_going"))
-
-
-###############
-# AJAX request handlers
-#   These return JSON, rather than rendering pages.
-###############
-
-@app.route("/_example")
-def example():
-    """
-    Example ajax request handler
-    """
-    app.logger.debug("Got a JSON request")
-    rslt = {"key": "value"}
-    return flask.jsonify(result=rslt)
 
 
 #################
