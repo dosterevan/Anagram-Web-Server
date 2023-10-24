@@ -86,10 +86,7 @@
          <div id="error-message"></div>
          <h2>You found </h2>
          <p id="results">
-         <div id="matched-message", type="text", width="15"></div>
-            {% for match in session.matches %}
-            {{ match }}
-            {% endfor %}
+         <div id="matched-message"></div>
          </p>
       </div>
       <!-- container -->
@@ -110,10 +107,10 @@
          // shift and control, so make sure whatever you do with the
          // event does not depend on it being a letter.
          //
-         $("#attempt").keyup(function(event) {
+         $("#attempt").on("input", function(event) {
             var txt = $("#attempt").val();  // Current content of the input field
-            var keycode = event.which;      // They key that just went up
-            var letter = String.fromCharCode(keycode);
+            //var keycode = event.which;      // They key that just went up
+            //var letter = String.fromCharCode(keycode);
 
             // That letter might not be a letter ... it could be the
             // the backspace key, or even the shift key, because 'keyup'
@@ -121,25 +118,29 @@
             // upper and lower case comes from state of shift key + key code,
             // so ignoring the shift key we get only the upper case letters.
 
-            if (! "ABCDEFGHIJKLMNOPQRSTUVWXYZ".includes(letter)) { return }
+            //if (! "ABCDEFGHIJKLMNOPQRSTUVWXYZ".includes(letter)) { return }
 
             $.getJSON( "/_check", { text: txt },
                        function(data) {
                         result = data.result
                         success = data.success
                         rsval = data.matches
+
+                        // Type out error message
                         $("#error-message").text(data.message);
-                        console.log("matches: " + rsval)
+                        
+                        // If the url for success.html is returned, run it
                         if (data.redirect_url) {
-                           console.log("Into Result")
                            window.location.href = data.redirect_url;
                         }
+
+                        // What is the status of the match
                         else if (rsval) {
-                           console.log("Into matched message")
                            $("#matched-message").text(rsval.join(", "));
                         }
+
+                        // If nothing else, just add the characters in response box
                         else {
-                           console.log("Adding to response")
                            $("#response").append(txt.length + " ");
                             
                         }

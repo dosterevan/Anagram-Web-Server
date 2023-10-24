@@ -78,9 +78,6 @@ def keep_going():
 
 @app.route("/success")
 def success():
-    #app.logger.info(print("fix success"))
-    #success = {"success": "success.html"}
-    #return flask.jsonify(success)
     return flask.render_template('success.html')
 
 
@@ -104,19 +101,15 @@ def check():
 
     # The data we need, from form and from cookie 
     text = request.args.get("text", type=str)
-    #print("text", text)
     jumble = flask.session["jumble"]
-    #print("Jumble", jumble)
     matches = flask.session.get("matches", [])  # Default to empty list
 
     # Is it good?
     in_jumble = LetterBag(jumble).contains(text)
-    #print(in_jumble)
     matched = WORDS.has(text)
-    #print(matched)
-    #print(text in matches)
-    result = len(matches) >= flask.session["target_count"]
+    result = len(matches) >= flask.session["target_count"]  #Our goal
 
+    # layout of general JSON format
     response_data = {
         'result': False,
         'redirect_url': False,
@@ -124,28 +117,29 @@ def check():
         'target' : flask.session["target_count"],
         'message': None
     }
-    #app.logger.info(print("result", result))
-
-    success = matched and in_jumble and not (text in matches)
+    
     # Respond appropriately
-
-    if success:
+    if result:
+        # If result is met, then we set our url to success
+        message = "Congrats you solved it, press any character to continue!"
+        return flask.jsonify(message = message, redirect_url = flask.url_for("success"), result = True)
+    elif matched and in_jumble and not (text in matches):
         # Cool, they found a new word
-        response_data['message'] = "Congrats you found the match: {}".format(text)
+        response_data['message'] = "Congrats you found the match: {}. Clear the box to continue".format(text)
         matches.append(text)
         flask.session["matches"] = matches
         return flask.jsonify(response_data)
-    if result:
-        return jsonify(redirect_url=flask.url_for("success"), result = True)
     elif text in matches:
-        #flask.flash("You already found {}".format(text))
+        # We already found this word
         response_data['message'] = "You already found {}".format(text)
         app.logger.debug(print(response_data))
         return flask.jsonify(response_data)
     elif not matched:
+        # Word is not in lsit
         response_data['message'] = "{} isn't in the list of words".format(text)
         return flask.jsonify(response_data)
     elif not in_jumble:
+        # 
         response_data['message'] = '"{}" can\'t be made from the letters {}'.format(text, jumble)
         return flask.jsonify(response_data)
     else:
