@@ -135,11 +135,11 @@ def check():
         app.logger.debug(print(response_data))
         return flask.jsonify(response_data)
     elif not matched:
-        # Word is not in lsit
+        # Word is not in matches list
         response_data['message'] = "{} isn't in the list of words".format(text)
         return flask.jsonify(response_data)
     elif not in_jumble:
-        # 
+        # Word can not be made from jumble
         response_data['message'] = '"{}" can\'t be made from the letters {}'.format(text, jumble)
         return flask.jsonify(response_data)
     else:
